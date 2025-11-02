@@ -51,6 +51,21 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    // Apache POI core (required for Excel and Word)
+    implementation 'org.apache.poi:poi:5.3.0'
+
+    // Apache POI for .docx (XWPF support)
+    implementation 'org.apache.poi:poi-ooxml:5.3.0'
+
+    // Apache POI Scratchpad (HWPF support for .doc files)
+    implementation 'org.apache.poi:poi-scratchpad:5.3.0'
+
+    // (Optional) PDFBox if you also extract text from PDF
+    implementation 'org.apache.pdfbox:pdfbox:2.0.30'
+    // For REST APIs (blocking)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
 
 dependencyManagement {
