@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService; // Changed from JwtUtil
+    private final JwtService jwtService;
 
     public User signup(SignupRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {

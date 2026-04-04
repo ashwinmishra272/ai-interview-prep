@@ -3,17 +3,21 @@ package com.ashwin.aiinterviewprep.impl;
 import com.ashwin.aiinterviewprep.agents.IEvaluatorAgent;
 import com.ashwin.aiinterviewprep.model.AnswerEvaluation;
 import com.ashwin.aiinterviewprep.service.GPTClient;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-/**
- * Uses GPT to evaluate an interview answer with feedback and score.
- */
 @Component
 public class EvaluatorAgentGPTImpl implements IEvaluatorAgent {
 
+    private static final Logger log = LoggerFactory.getLogger(EvaluatorAgentGPTImpl.class);
+
     private final GPTClient gptClient;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public EvaluatorAgentGPTImpl(GPTClient gptClient) {
         this.gptClient = gptClient;
@@ -41,26 +45,19 @@ public class EvaluatorAgentGPTImpl implements IEvaluatorAgent {
 
         String rawResponse = gptClient.askChat(systemPrompt, userPrompt, 1);
 
-        // Try to extract JSON from GPT response (safe fallback if it adds text)
-        String jsonPart = extractJson(rawResponse);
-
-        // Parse JSON manually (safe, no dependency)
         int score = 0;
         String feedback = "";
         String improvement = "";
 
         try {
-            if (jsonPart.contains("\"score\"")) {
-                score = Integer.parseInt(jsonPart.replaceAll(".*\"score\"\\s*:\\s*(\\d+).*", "$1"));
-            }
-            if (jsonPart.contains("\"feedback\"")) {
-                feedback = jsonPart.replaceAll(".*\"feedback\"\\s*:\\s*\"(.*?)\".*", "$1");
-            }
-            if (jsonPart.contains("\"improvement\"")) {
-                improvement = jsonPart.replaceAll(".*\"improvement\"\\s*:\\s*\"(.*?)\".*", "$1");
-            }
+            String jsonPart = extractJson(rawResponse);
+            JsonNode node = objectMapper.readTree(jsonPart);
+            score = node.path("score").asInt(0);
+            feedback = node.path("feedback").asText("");
+            improvement = node.path("improvement").asText("");
         } catch (Exception e) {
-            feedback = "Evaluation parsing failed: " + rawResponse;
+            log.warn("Failed to parse GPT evaluation response: {}", rawResponse, e);
+            feedback = "Evaluation parsing failed. Raw: " + rawResponse;
         }
 
         AnswerEvaluation eval = new AnswerEvaluation();
@@ -73,9 +70,6 @@ public class EvaluatorAgentGPTImpl implements IEvaluatorAgent {
         return eval;
     }
 
-    /**
-     * Extracts JSON from text if GPT adds extra notes or markdown.
-     */
     private String extractJson(String text) {
         int start = text.indexOf('{');
         int end = text.lastIndexOf('}');

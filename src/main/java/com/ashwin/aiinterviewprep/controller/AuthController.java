@@ -8,14 +8,17 @@ import com.ashwin.aiinterviewprep.model.User;
 import com.ashwin.aiinterviewprep.security.JwtService;
 import com.ashwin.aiinterviewprep.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -26,17 +29,17 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/signup")
-    public User signup(@RequestBody SignupRequest request) {
-        System.out.println("Signup request received: " + request.getEmail());
+    public User signup(@Valid @RequestBody SignupRequest request) {
+        log.info("Signup request received: {}", request.getEmail());
         User saved = userService.signup(request);
-        System.out.println("User saved: " + saved.getEmail());
+        log.info("User registered: {}", saved.getEmail());
         return saved;
     }
 
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody AuthRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
+    public AuthResponse login(@Valid @RequestBody AuthRequest request) {
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()

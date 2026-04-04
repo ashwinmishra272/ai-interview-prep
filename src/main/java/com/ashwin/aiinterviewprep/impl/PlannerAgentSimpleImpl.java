@@ -7,10 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A simple planner that allocates a few questions per extracted skill.
- * In the future, this can use GPT to dynamically plan interview coverage.
- */
+
 @Component
 public class PlannerAgentSimpleImpl implements IPlannerAgent {
 
@@ -18,17 +15,15 @@ public class PlannerAgentSimpleImpl implements IPlannerAgent {
     public List<SkillPlan> plan(List<String> skills) {
         List<SkillPlan> plans = new ArrayList<>();
 
-        // Simple heuristic: top 3–5 skills, 2 questions each.
         int count = 0;
         for (String skill : skills) {
-            if (count++ >= 5) break; // limit to top 5
+            if (count++ >= 5) break;
             SkillPlan p = new SkillPlan();
             p.setSkill(skill);
             p.setQuestionsCount(2);
             plans.add(p);
         }
 
-        // fallback if no skills
         if (plans.isEmpty()) {
             SkillPlan fallback = new SkillPlan();
             fallback.setSkill("General Communication");

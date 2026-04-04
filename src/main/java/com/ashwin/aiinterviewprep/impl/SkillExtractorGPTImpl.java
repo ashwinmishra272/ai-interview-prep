@@ -2,18 +2,19 @@ package com.ashwin.aiinterviewprep.impl;
 
 import com.ashwin.aiinterviewprep.agents.ISkillExtractor;
 import com.ashwin.aiinterviewprep.service.GPTClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Uses GPT to extract the most relevant skills shared between resume and job description.
- * This drives the rest of the interview plan.
- */
+
 @Component
 public class SkillExtractorGPTImpl implements ISkillExtractor {
+
+    private static final Logger log = LoggerFactory.getLogger(SkillExtractorGPTImpl.class);
 
     private final GPTClient gptClient;
 
@@ -43,7 +44,6 @@ public class SkillExtractorGPTImpl implements ISkillExtractor {
 
         try {
             String reply = gptClient.askChat(systemPrompt, userPrompt, 1);
-            // Example reply: "Java, Spring Boot, REST APIs, Docker, AWS"
             String[] parts = reply.split("[,\\n]+");
             List<String> skills = new ArrayList<>();
             for (String p : parts) {
@@ -54,8 +54,7 @@ public class SkillExtractorGPTImpl implements ISkillExtractor {
             }
             return skills;
         } catch (Exception e) {
-            e.printStackTrace();
-            // fallback mock list if GPT fails
+            log.warn("Skill extraction failed, using fallback list", e);
             return Arrays.asList("Java", "Spring Boot", "System Design", "Communication");
         }
     }
